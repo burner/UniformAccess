@@ -1,5 +1,4 @@
 import uniformaccess;
-import std.logger;
 import std.range;
 
 @("UA", "SomeOtherTableName") struct SomeStruct {
@@ -11,24 +10,6 @@ import std.range;
 
 	//pragma(msg, genUniformAccess!SomeStruct);
 	mixin(genUniformAccess!SomeStruct);
-}
-
-unittest {
-	/*auto db = Sqlite("foobar.sqlite");
-	SomeStruct d;
-	db.createTable!SomeStruct();
-	d.someother = 1337.0;
-	d.interval = 12;
-	d.bar = 34;
-	d.zzz = 7331;
-	d.key = 128;
-	db.insert(d);
-	log();
-
-	auto sel = db.select!SomeStruct();
-	foreach(SomeStruct it; sel) {
-		logF("%f %d %d %d", it.interval, it.bar, it.zzz, it.key);
-	}*/
 }
 
 @("UA", "stocks") struct Entry {
