@@ -7,6 +7,11 @@ import std.csv;
 import std.conv;
 import five;
 
+version(handwritten) {
+	import etc.c.sqlite3;
+	void dummy(void* d) {}
+}
+
 void checkIfDBExists(string dbName) {
 	if(!exists(dbName)) {
 		auto f = File(dbName, "w");
@@ -27,12 +32,14 @@ void main() {
 	}
 	assert(idx == 50000, to!string(idx));
 
-	version(DigitalMars) {
-		string dbname = "fivetodb.db";
+	string dbname = "fivetodb.db";
+	version(handwritten) {
+		checkIfDBExists(dbname);
+		auto db = Sqlite(dbname);
+		db.createTable!Five();
+		db.close();
 	}
-	version(GNU) {
-		string dbname = "fivetodbg.db";
-	}
+
 	version(uniform) {
 		checkIfDBExists(dbname);
 		auto db = Sqlite(dbname);
@@ -40,13 +47,41 @@ void main() {
 	}
 
 	StopWatch sw;
-	sw.start();
 	version(uniform) {
+		sw.start();
 		db.beginTransaction();
 		foreach(it; arr) {
 			db.insert(it);
 		}
 		db.endTransaction();
+	}
+	version(handwritten) {
+		sqlite3 *db2;
+		sqlite3_open(toStringz(dbname), &db2);
+		sqlite3_stmt *stmt;
+		sw.start();
+		sqlite3_exec(db2, "BEGIN TRANSACTION;", null, null, null);
+		string istmt = "INSERT INTO Five(firstname, lastname, company, road, city, state, stateaka, zip, telefon, fax, email, web) Values(?,?,?,?,?,?,?,?,?,?,?,?);";
+		sqlite3_prepare_v2(db2, toStringz(istmt), to!int(istmt.length), &stmt, null);
+		foreach(it; arr) {
+			int j = 1;
+			sqlite3_bind_text(stmt, j++, toStringz(it.firstname), to!int(it.firstname.length), null);
+			sqlite3_bind_text(stmt, j++, toStringz(it.lastname), to!int(it.lastname.length), null);
+			sqlite3_bind_text(stmt, j++, toStringz(it.company), to!int(it.company.length), null);
+			sqlite3_bind_text(stmt, j++, toStringz(it.road), to!int(it.road.length), null);
+			sqlite3_bind_text(stmt, j++, toStringz(it.city), to!int(it.city.length), null);
+			sqlite3_bind_text(stmt, j++, toStringz(it.state), to!int(it.state.length), null);
+			sqlite3_bind_text(stmt, j++, toStringz(it.stateaka), to!int(it.stateaka.length), null);
+			sqlite3_bind_int(stmt, j++, it.zip);
+			sqlite3_bind_text(stmt, j++, toStringz(it.telefon), to!int(it.telefon.length), null);
+			sqlite3_bind_text(stmt, j++, toStringz(it.fax), to!int(it.fax.length), null);
+			sqlite3_bind_text(stmt, j++, toStringz(it.email), to!int(it.email.length), null);
+			sqlite3_bind_text(stmt, j++, toStringz(it.web), to!int(it.web.length), null);
+			sqlite3_step(stmt);
+		}
+		sqlite3_finalize(stmt);
+		sqlite3_exec(db2, "END TRANSACTION;", null, null, null);
+
 	}
 	writefln("%d", sw.peek.msecs);
 }

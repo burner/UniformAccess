@@ -1,11 +1,22 @@
 fiveud: uniformaccess.d fivek.d fivetodb.d Makefile
 	rm -rf fivetodb.db
-	dmd uniformaccess.d fivek.d fivetodb.d -offiveud -L-lsqlite3 -L-ldl -I. -release -O -inline -version=uniform
+	dmd uniformaccess.d fivek.d fivetodb.d -offiveud -L-lsqlite3 -L-ldl -I. -noboundscheck -release -O -inline -version=uniform
 	./fiveud
 
 fiveudg: uniformaccess.d fivek.d fivetodb.d Makefile
-	rm -rf fivetodbg.db
-	gdc uniformaccess.d fivek.d fivetodb.d -o fiveudg -lsqlite3 -ldl -I. -Ofast --version=uniform
+	rm -rf fivetodb.db
+	gdc uniformaccess.d -ggdb fivek.d fivetodb.d -o fiveudg -lsqlite3 --inline -fno-bounds-check -I. -Ofast --version=uniform --release
+#gdc uniformaccess.d -ggdb fivek.d fivetodb.d -o fiveudg -lsqlite3 --inline -I. --version=uniform 
+	./fiveudg
+
+hfiveud: uniformaccess.d fivek.d fivetodb.d Makefile
+	rm -rf fivetodb.db
+	dmd uniformaccess.d fivek.d fivetodb.d -offiveud -L-lsqlite3 -L-ldl -I. -noboundscheck -release -O -inline -version=handwritten
+	./fiveud
+
+hfiveudg: uniformaccess.d fivek.d fivetodb.d Makefile
+	rm -rf fivetodb.db
+	gdc uniformaccess.d -ggdb fivek.d fivetodb.d -o fiveudg -lsqlite3 --inline -fno-bounds-check -I. -Ofast --version=handwritten --release
 	./fiveudg
 
 cpp: sweetqltest.cpp Makefile makedb.sh

@@ -15,5 +15,6 @@ import uniformaccess;
 	@("UA") string email;
 	@("UA") string web;
 
+	//pragma(msg, genUniformAccess!Five);
 	mixin(genUniformAccess!Five);
 }

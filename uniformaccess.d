@@ -300,9 +300,10 @@ pure string insertDataMember(string a) @safe nothrow {
 	"\t} else static if(isFloatingPoint!(typeof(this." ~ a ~ "))) {\n" ~
 	"\t\tsqlite3_bind_double(stmt, i++, this." ~ a ~ ");\n" ~
 	"\t} else static if(isSomeString!(typeof(this." ~ a ~ "))) {\n" ~
-	//"\t\tsqlite3_bind_text(stmt, i++, toStringz(this." ~ a ~ "), to!int(this." 
-	"\t\tsqlite3_bind_text(stmt, i++, toCstrPara.toStringZ(this." ~ a ~ "), to!int(this." 
-	~ a ~ ".length), SQLITE_STATIC);\n" ~
+	"\t\tsqlite3_bind_text(stmt, i++, toStringz(this." ~ a ~ "), to!int(this." 
+	//"\t\tsqlite3_bind_text(stmt, i++, toCstrPara.toStringZ(this." ~ a ~ "), to!int(this." 
+	//~ a ~ ".length), SQLITE_STATIC);\n" ~
+	~ a ~ ".length), null);\n" ~
 	"\t} else {\n" ~
 	"\t\tstatic assert(false);\n" ~
 	"\t}\n";
@@ -557,7 +558,9 @@ struct Sqlite {
 private:
 	private string dbName;
 	sqlite3 *db;
+	sqlite3_stmt *stmtTmp;
 	bool dbOpen;
+	int inTrans;
 public:
 
 	struct UniRange(T) {
@@ -626,6 +629,10 @@ public:
 	}
 
 	~this() {
+		this.close();
+	}
+
+	void close() {
 		if(dbOpen) {
 			sqlite3_close(db);
 		}
@@ -643,17 +650,17 @@ public:
 	}
 
 	UniRange!(T) makeIterator(T)(string stmtStr) {
-		sqlite3_stmt* stmt;
+		sqlite3_stmt* stmt2;
 		StaticToStringZ!4096 s;
  		int rsltCode = sqlite3_prepare(db, s.toStringZ(stmtStr),
-			to!int(stmtStr.length), &stmt, null
+			to!int(stmtStr.length), &stmt2, null
 		);
 		if(rsltCode == SQLITE_ERROR) {
 			throw new Exception("Select Statement:\"" ~
 					stmtStr ~ "\" failed with error:\"" ~
 					to!string(sqlite3_errmsg(db)) ~ "\"");
 		} else if(rsltCode == SQLITE_OK) {
-			return UniRange!(T)(stmt, rsltCode);
+			return UniRange!(T)(stmt2, rsltCode);
 		} else {
 			assert(false, to!string(sqlite3_errmsg(db)));
 		}
@@ -663,8 +670,25 @@ public:
 
 	void insert(T)(ref T t) {
 		sqlite3_stmt* stmt;
-		t.uniformAccessInsert(this.db, stmt);
-		sqlite3_finalize(stmt);
+		int doStuff = this.inTrans;
+		if(this.inTrans > 0) {
+			this.inTrans++;
+		}
+
+		if(this.inTrans > 2) {
+			t.uniformAccessInsert(this.db, stmtTmp, doStuff);
+		} else {
+			t.uniformAccessInsert(this.db, stmt, doStuff);
+		}
+
+		if(doStuff == 1) {
+			assert(stmt !is null);
+			stmtTmp = stmt;
+			assert(stmtTmp !is null);
+		} else {
+			sqlite3_finalize(stmt);
+			assert(stmt is null);
+		}
 	}
 
 	// Remove
@@ -705,6 +729,7 @@ public:
 			throw new Exception("Begin Transaction failed with error " ~ 
 				to!string(errorMessage));
 		}
+		this.inTrans = 1;
 	}
 
 	void endTransaction() {
@@ -715,6 +740,8 @@ public:
 			throw new Exception("Begin Transaction failed with error " ~ 
 				to!string(errorMessage));
 		}
+		sqlite3_finalize(this.stmtTmp);
+		this.inTrans = 0;
 	}
 
 	static string checkForDeleteAndInsertDropExpr(string str) {
@@ -731,19 +758,24 @@ string genUniformAccess(T)() {
 	string ret = 
 		"import etc.c.sqlite3;\n"
 		~ "import std.traits;\n"
-		~ "void uniformAccessInsert(sqlite3* db, sqlite3_stmt* stmt) {\n"
-		~ "\tenum insertStmt = \""~ genInsertStatement!T() ~ "\";\n"
-		~ "\tStaticToStringZ!(insertStmt.length+1) toCstr;\n"
-		~ "\tStaticToStringZ!(2048) toCstrPara;\n"
+		~ "void uniformAccessInsert(sqlite3* db, ref sqlite3_stmt* stmt, const int once) {\n"
+		//~ "\tStaticToStringZ!(insertStmt.length+1) toCstr;\n"
 		~ "\tauto elemCount = " ~ genInsertElemCount!T() ~ ";\n"
-		~ "\tint errCode = sqlite3_prepare_v2(db, toCstr.toStringZ(insertStmt)"
-		~ ",\n\tto!int(insertStmt.length), &stmt, null\n\t);\n"
-		~ "\tif(errCode != SQLITE_OK) {\n"
-		~ "\t	scope(exit) sqlite3_finalize(stmt);\n"
-		~ "\t	throw new Exception(insertStmt ~ \" FAILED \" ~\n"
-		~ "\t		to!string(sqlite3_errmsg(db))\n"
-		~ "\t	);\n"
+		~ "\tenum insertStmt = \""~ genInsertStatement!T() ~ "\";\n"
+		~ "\tif(once <= 1) {\n"
+		//~ "\t\tStaticToStringZ!(2048) toCstrPara;\n"
+		//~ "\tint errCode = sqlite3_prepare_v2(db, toCstr.toStringZ(insertStmt)"
+		~ "\t\tint errCode = sqlite3_prepare_v2(db, toStringz(insertStmt)"
+		~ ",\n\t\t\tto!int(insertStmt.length), &stmt, null\n\t\t);\n"
+		~ "\t\tif(errCode != SQLITE_OK) {\n"
+		~ "\t\t	scope(exit) sqlite3_finalize(stmt);\n"
+		~ "\t\t	throw new Exception(insertStmt ~ \" FAILED \" ~\n"
+		~ "\t\t		to!string(sqlite3_errmsg(db))\n"
+		~ "\t\t	);\n"
+		~ "\t\t}\n"
 		~ "\t}\n"
+		~ "\tassert(stmt !is null, \"stmt \" ~ to!string(once));\n"
+		~ "\tassert(db !is null, \"db\");\n"
 
 		~ "\tint i = 1;	\n"
 		~ genInsertAddParameterMixinString!T() ~ "\n"
@@ -754,7 +786,9 @@ string genUniformAccess(T)() {
 		~ "\t		insertStmt ~ \" \" ~ to!string(this)\n"
 		~ "\t	);\n"
 		~ "\t}\n"
-		~ "\tsqlite3_finalize(stmt);\n"
+		~ "\tif(once == 0) {\n"
+		~ "\t\tsqlite3_finalize(stmt);\n"
+		~ "\t}\n\n"
 		~ "}\n\n"
 
 		~ "void uniformAccessRemove(sqlite3* db, sqlite3_stmt* stmt) {\n"
