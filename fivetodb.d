@@ -33,9 +33,11 @@ void main() {
 	version(GNU) {
 		string dbname = "fivetodbg.db";
 	}
-	checkIfDBExists(dbname);
-	auto db = Sqlite(dbname);
-	db.createTable!Five();
+	version(uniform) {
+		checkIfDBExists(dbname);
+		auto db = Sqlite(dbname);
+		db.createTable!Five();
+	}
 
 	StopWatch sw;
 	sw.start();

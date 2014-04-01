@@ -1,6 +1,7 @@
 fiveud: uniformaccess.d fivek.d fivetodb.d Makefile
 	rm -rf fivetodb.db
-	dmd uniformaccess.d fivek.d fivetodb.d -offiveud -L-lsqlite3 -L-ldl -I. -release -O -inline --version=uniform
+	dmd uniformaccess.d fivek.d fivetodb.d -offiveud -L-lsqlite3 -L-ldl -I. -release -O -inline -version=uniform
+	./fiveud
 
 fiveudg: uniformaccess.d fivek.d fivetodb.d Makefile
 	rm -rf fivetodbg.db
