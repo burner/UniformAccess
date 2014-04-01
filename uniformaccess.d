@@ -36,7 +36,7 @@ unittest {
 }
 
 struct StaticToStringZ(const size_t size) {
-	char[size] data;
+	char[size] data = void;
 	
 	pure void clear() @safe nothrow {
 		this.data[] = '\0';
@@ -300,7 +300,8 @@ pure string insertDataMember(string a) @safe nothrow {
 	"\t} else static if(isFloatingPoint!(typeof(this." ~ a ~ "))) {\n" ~
 	"\t\tsqlite3_bind_double(stmt, i++, this." ~ a ~ ");\n" ~
 	"\t} else static if(isSomeString!(typeof(this." ~ a ~ "))) {\n" ~
-	"\t\tsqlite3_bind_text(stmt, i++, toStringz(this." ~ a ~ "), to!int(this." 
+	//"\t\tsqlite3_bind_text(stmt, i++, toStringz(this." ~ a ~ "), to!int(this." 
+	"\t\tsqlite3_bind_text(stmt, i++, toCstrPara.toStringZ(this." ~ a ~ "), to!int(this." 
 	~ a ~ ".length), SQLITE_STATIC);\n" ~
 	"\t} else {\n" ~
 	"\t\tstatic assert(false);\n" ~
@@ -733,6 +734,7 @@ string genUniformAccess(T)() {
 		~ "void uniformAccessInsert(sqlite3* db, sqlite3_stmt* stmt) {\n"
 		~ "\tenum insertStmt = \""~ genInsertStatement!T() ~ "\";\n"
 		~ "\tStaticToStringZ!(insertStmt.length+1) toCstr;\n"
+		~ "\tStaticToStringZ!(2048) toCstrPara;\n"
 		~ "\tauto elemCount = " ~ genInsertElemCount!T() ~ ";\n"
 		~ "\tint errCode = sqlite3_prepare_v2(db, toCstr.toStringZ(insertStmt)"
 		~ ",\n\tto!int(insertStmt.length), &stmt, null\n\t);\n"
@@ -758,6 +760,7 @@ string genUniformAccess(T)() {
 		~ "void uniformAccessRemove(sqlite3* db, sqlite3_stmt* stmt) {\n"
 		~ "\tenum removeStmt = \"" ~ genRemoveStatement!T() ~ "\";\n"
 		~ "\tStaticToStringZ!(removeStmt.length+1) toCstr;\n"
+		~ "\tStaticToStringZ!(2048) toCstrPara;\n"
 		~ "\tint errCode = sqlite3_prepare_v2(db, toCstr.toStringZ(removeStmt)"
 		~ ",\n\tto!int(removeStmt.length), &stmt, null\n\t);\n"
 		~ "\tif(errCode != SQLITE_OK) {\n"
@@ -781,6 +784,7 @@ string genUniformAccess(T)() {
 		~ "void uniformAccessUpdate(sqlite3* db, sqlite3_stmt* stmt) {\n"
 		~ "\tenum updateStmt = \"" ~ genUpdateStatement!T() ~ "\";\n"
 		~ "\tStaticToStringZ!(updateStmt.length+1) toCstr;\n"
+		~ "\tStaticToStringZ!(2048) toCstrPara;\n"
 		~ "\tint errCode = sqlite3_prepare_v2(db, toCstr.toStringZ(updateStmt)"
 		~ ",\n\tto!int(updateStmt.length), &stmt, null\n\t);\n"
 		~ "\tif(errCode != SQLITE_OK) {\n"
