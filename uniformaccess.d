@@ -686,7 +686,7 @@ public:
 			stmtTmp = stmt;
 			assert(stmtTmp !is null);
 		} else {
-			sqlite3_finalize(stmt);
+			sqlite3_reset(stmt);
 			assert(stmt is null);
 		}
 	}

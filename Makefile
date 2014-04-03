@@ -33,7 +33,8 @@ cppclang: sweetqltest.cpp Makefile makedb.sh
 
 c: csql.c Makefile
 	./makedb.sh
-	gcc -Wall -lsqlite3 csql.c -o csql --std=c99 -Ofast -march=native
+	#gcc -Wall -lsqlite3 csql.c -o csql --std=c99 -Ofast -march=native
+	gcc -Wall -lsqlite3 csql.c -o csql --std=c99 -ggdb
 	./csql
 	
 cclang: csql.c Makefile

@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -80,9 +81,6 @@ typedef struct Five_t {
 } Five;
 
 int main() {
-	struct timeval start, end;
-	gettimeofday(&start, NULL);
-
 	Five arr[50000];
 	int idx = 0;
 	FILE * fp;
@@ -112,6 +110,28 @@ int main() {
 			five.firstname, five.lastname, five.company, five.road, five.city, five.state, five.stateaka, 
 			buf, five.telefon, five.fax, five.email, five.web);
 		five.zip = atoi(buf);
+		five.firstname = five.firstname+1;
+		five.firstname[strlen(five.firstname)-1] = '\0';
+		five.lastname = five.lastname+1;
+		five.lastname[strlen(five.lastname)-1] = '\0';
+		five.company = five.company+1;
+		five.company[strlen(five.company)-1] = '\0';
+		five.road = five.road+1;
+		five.road[strlen(five.road)-1] = '\0';
+		five.city = five.city+1;
+		five.city[strlen(five.city)-1] = '\0';
+		five.state = five.state+1;
+		five.state[strlen(five.state)-1] = '\0';
+		five.stateaka = five.stateaka+1;
+		five.stateaka[strlen(five.stateaka)-1] = '\0';
+		five.telefon = five.telefon+1;
+		five.telefon[strlen(five.telefon)-1] = '\0';
+		five.fax = five.fax+1;
+		five.fax[strlen(five.fax)-1] = '\0';
+		five.email = five.email+1;
+		five.email[strlen(five.email)-1] = '\0';
+		five.web = five.web+1;
+		five.web[strlen(five.web)-1] = '\0';
 		if(r != 12) {
 			printf("%d %s\n", r, line);
 			return 1;
@@ -123,32 +143,52 @@ int main() {
 	if (line) {
 		free(line);
 	}
-	printf("%d\n", stampstop(begin));
+	printf("csv time %d\n", stampstop(begin));
 	begin = stampstart();
 
 	sqlite3 *db;
-	sqlite3_open("testtable.db",&db);
+	int ret = sqlite3_open("testtable.db",&db);
+	assert(ret == SQLITE_OK);
 	//gettimeofday(&start, NULL);
 
-	sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+	ret = sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+	assert(ret == SQLITE_OK);
+
 	const char* istmt  = "INSERT INTO Person(Firstname, Lastname, Company, Address, County, City, State, Zip, PhoneWork, PhonePrivat, Mail, Www) Values(?,?,?,?,?,?,?,?,?,?,?,?);";
+	const char* istmt2  = "INSERT INTO Person(Firstname, Lastname, Company, Address, County, City, State, Zip, PhoneWork, PhonePrivat, Mail, Www) Values(%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,%s,%s);\n";
 	sqlite3_stmt* stmt;
-	sqlite3_prepare_v2(db, istmt, strlen(istmt), &stmt, NULL);
+	const char* ozTest;
+	ret = sqlite3_prepare_v2(db, istmt, strlen(istmt), &stmt, &ozTest);
+	assert(ret == SQLITE_OK);
 	for(int i = 0; i < idx; ++i) {
 		int j = 1;
-		sqlite3_bind_text(stmt, j++, arr[i].firstname, strlen(arr[i].firstname), &dummy);
-		sqlite3_bind_text(stmt, j++, arr[i].lastname, strlen(arr[i].lastname), &dummy);
-		sqlite3_bind_text(stmt, j++, arr[i].company, strlen(arr[i].company), &dummy);
-		sqlite3_bind_text(stmt, j++, arr[i].road, strlen(arr[i].road), &dummy);
-		sqlite3_bind_text(stmt, j++, arr[i].city, strlen(arr[i].city), &dummy);
-		sqlite3_bind_text(stmt, j++, arr[i].state, strlen(arr[i].state), &dummy);
-		sqlite3_bind_text(stmt, j++, arr[i].stateaka, strlen(arr[i].stateaka), &dummy);
+		/*printf(istmt2, arr[i].firstname, arr[i].lastname, 
+			arr[i].company, arr[i].road, arr[i].city, arr[i].state, arr[i].stateaka, arr[i].zip, 
+			arr[i].telefon, arr[i].fax, arr[i].email, arr[i].web
+		);*/
+		sqlite3_bind_text(stmt, j++, arr[i].firstname, strlen(arr[i].firstname), NULL);
+		sqlite3_bind_text(stmt, j++, arr[i].lastname, strlen(arr[i].lastname), NULL);
+		sqlite3_bind_text(stmt, j++, arr[i].company, strlen(arr[i].company), NULL);
+		sqlite3_bind_text(stmt, j++, arr[i].road, strlen(arr[i].road), NULL);
+		sqlite3_bind_text(stmt, j++, arr[i].city, strlen(arr[i].city), NULL);
+		sqlite3_bind_text(stmt, j++, arr[i].state, strlen(arr[i].state), NULL);
+		sqlite3_bind_text(stmt, j++, arr[i].stateaka, strlen(arr[i].stateaka), NULL);
 		sqlite3_bind_int(stmt, j++, arr[i].zip);
-		sqlite3_bind_text(stmt, j++, arr[i].telefon, strlen(arr[i].telefon), &dummy);
-		sqlite3_bind_text(stmt, j++, arr[i].fax, strlen(arr[i].fax), &dummy);
-		sqlite3_bind_text(stmt, j++, arr[i].email, strlen(arr[i].email), &dummy);
-		sqlite3_bind_text(stmt, j++, arr[i].web, strlen(arr[i].web), &dummy);
-		sqlite3_step(stmt);
+		sqlite3_bind_text(stmt, j++, arr[i].telefon, strlen(arr[i].telefon), NULL);
+		sqlite3_bind_text(stmt, j++, arr[i].fax, strlen(arr[i].fax), NULL);
+		sqlite3_bind_text(stmt, j++, arr[i].email, strlen(arr[i].email), NULL);
+		sqlite3_bind_text(stmt, j++, arr[i].web, strlen(arr[i].web), NULL);
+		assert(j == 13);
+		ret = sqlite3_step(stmt);
+		if(ret != SQLITE_DONE) {
+			printf("%d \"%s\"\n", ret, sqlite3_errmsg(db));
+			printf("%s %s %s %s %s %s %s %d %s %s %s %s\n", arr[i].firstname, arr[i].lastname, 
+				arr[i].company, arr[i].road, arr[i].city, arr[i].state, arr[i].stateaka, arr[i].zip, 
+				arr[i].telefon, arr[i].fax, arr[i].email, arr[i].web
+			);
+			return 1;
+		}
+		sqlite3_reset(stmt);
 	}
 	sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, NULL);
 	printf("%d\n", stampstop(begin));
