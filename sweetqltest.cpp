@@ -89,8 +89,6 @@ int main() {
 
 	sweet::Bench insert;
 	db.insert<Person>(per.begin(), per.end());
-	//Reservation a("Danny", "Zeckzer", "Armsen", "02.04.2013");
-	//db.insert<Reservation>(a);
 	insert.stop();
 	std::cout<<"Writting the persons to the db took "<<insert.milli()
 		<<" msec"<<std::endl;

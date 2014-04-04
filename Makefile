@@ -6,16 +6,15 @@ fiveud: uniformaccess.d fivek.d fivetodb.d Makefile
 fiveudg: uniformaccess.d fivek.d fivetodb.d Makefile
 	rm -rf fivetodb.db
 	gdc uniformaccess.d -ggdb fivek.d fivetodb.d -o fiveudg -lsqlite3 --inline -fno-bounds-check -I. -Ofast --version=uniform --release
-#gdc uniformaccess.d -ggdb fivek.d fivetodb.d -o fiveudg -lsqlite3 --inline -I. --version=uniform 
 	./fiveudg
 
 hfiveud: uniformaccess.d fivek.d fivetodb.d Makefile
-	rm -rf fivetodb.db
+	./makedb2.sh
 	dmd uniformaccess.d fivek.d fivetodb.d -offiveud -L-lsqlite3 -L-ldl -I. -noboundscheck -release -O -inline -version=handwritten
 	./fiveud
 
 hfiveudg: uniformaccess.d fivek.d fivetodb.d Makefile
-	rm -rf fivetodb.db
+	./makedb2.sh
 	gdc uniformaccess.d -ggdb fivek.d fivetodb.d -o fiveudg -lsqlite3 --inline -fno-bounds-check -I. -Ofast --version=handwritten --release
 	./fiveudg
 
@@ -33,8 +32,7 @@ cppclang: sweetqltest.cpp Makefile makedb.sh
 
 c: csql.c Makefile
 	./makedb.sh
-	#gcc -Wall -lsqlite3 csql.c -o csql --std=c99 -Ofast -march=native
-	gcc -Wall -lsqlite3 csql.c -o csql --std=c99 -ggdb
+	gcc -Wall -lsqlite3 csql.c -o csql --std=c99 -Ofast -march=native
 	./csql
 	
 cclang: csql.c Makefile

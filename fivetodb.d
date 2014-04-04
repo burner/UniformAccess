@@ -34,10 +34,7 @@ void main() {
 
 	string dbname = "fivetodb.db";
 	version(handwritten) {
-		checkIfDBExists(dbname);
-		auto db = Sqlite(dbname);
-		db.createTable!Five();
-		db.close();
+		dbname = "testtable.db";
 	}
 
 	version(uniform) {
@@ -61,7 +58,7 @@ void main() {
 		sqlite3_stmt *stmt;
 		sw.start();
 		sqlite3_exec(db2, "BEGIN TRANSACTION;", null, null, null);
-		string istmt = "INSERT INTO Five(firstname, lastname, company, road, city, state, stateaka, zip, telefon, fax, email, web) Values(?,?,?,?,?,?,?,?,?,?,?,?);";
+		string istmt = "INSERT INTO Person(firstname, lastname, company, road, city, state, stateaka, zip, telefon, fax, email, web) Values(?,?,?,?,?,?,?,?,?,?,?,?);";
 		sqlite3_prepare_v2(db2, toStringz(istmt), to!int(istmt.length), &stmt, null);
 		foreach(it; arr) {
 			int j = 1;
@@ -77,7 +74,12 @@ void main() {
 			sqlite3_bind_text(stmt, j++, toStringz(it.fax), to!int(it.fax.length), null);
 			sqlite3_bind_text(stmt, j++, toStringz(it.email), to!int(it.email.length), null);
 			sqlite3_bind_text(stmt, j++, toStringz(it.web), to!int(it.web.length), null);
-			sqlite3_step(stmt);
+			assert(j == 13);
+			if(sqlite3_step(stmt) != SQLITE_DONE) {
+				writeln(to!string(sqlite3_errmsg(db2)));
+				return;
+			}
+			sqlite3_reset(stmt);
 		}
 		sqlite3_finalize(stmt);
 		sqlite3_exec(db2, "END TRANSACTION;", null, null, null);

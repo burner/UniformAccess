@@ -155,7 +155,7 @@ int main() {
 	assert(ret == SQLITE_OK);
 
 	const char* istmt  = "INSERT INTO Person(Firstname, Lastname, Company, Address, County, City, State, Zip, PhoneWork, PhonePrivat, Mail, Www) Values(?,?,?,?,?,?,?,?,?,?,?,?);";
-	const char* istmt2  = "INSERT INTO Person(Firstname, Lastname, Company, Address, County, City, State, Zip, PhoneWork, PhonePrivat, Mail, Www) Values(%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,%s,%s);\n";
+	//const char* istmt2  = "INSERT INTO Person(Firstname, Lastname, Company, Address, County, City, State, Zip, PhoneWork, PhonePrivat, Mail, Www) Values(%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,%s,%s);\n";
 	sqlite3_stmt* stmt;
 	const char* ozTest;
 	ret = sqlite3_prepare_v2(db, istmt, strlen(istmt), &stmt, &ozTest);
