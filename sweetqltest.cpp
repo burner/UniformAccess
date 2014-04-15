@@ -85,13 +85,14 @@ int main() {
 	sweet::Bench in;
 	std::vector<Person> per = parsePersonFile("50000.csv");
 	in.stop();
-	std::cout<<"Reading the file took "<<in.milli()<<" msec"<<std::endl;
+	//std::cout<<"Reading the file took "<<in.milli()<<" msec"<<std::endl;
 
 	sweet::Bench insert;
 	db.insert<Person>(per.begin(), per.end());
 	insert.stop();
-	std::cout<<"Writting the persons to the db took "<<insert.milli()
-		<<" msec"<<std::endl;
+	//std::cout<<"Writting the persons to the db took "<<insert.milli()
+		//<<" msec"<<std::endl;
+	std::cout<<insert.milli()<<std::endl;
 
 	return 0;
 }

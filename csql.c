@@ -143,7 +143,7 @@ int main() {
 	if (line) {
 		free(line);
 	}
-	printf("csv time %d\n", stampstop(begin));
+	//printf("csv time %d\n", stampstop(begin));
 	begin = stampstart();
 
 	sqlite3 *db;
