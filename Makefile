@@ -39,3 +39,11 @@ cclang: csql.c Makefile
 	./makedb.sh
 	clang -Wall -lsqlite3 csql.c -o csql --std=c99 -O3 -march=native
 	./csql
+
+test:
+	number=1 ; while [[ $$number -le 10 ]] ; do \
+		rm fivetodb.db ; \
+		./fiveud ; \
+		rm fivetodb.db ; \
+		./fiveudg ; \
+	done
