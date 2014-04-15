@@ -1,3 +1,4 @@
+// Robert burner Schadek rburners@gmail.com LGPL3 
 module uniformaccess;
 
 import std.stdio;
