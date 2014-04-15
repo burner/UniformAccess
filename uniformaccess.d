@@ -64,7 +64,8 @@ struct Data {
 	@("UA") int interval;
 	@("UA", "foo") int bar;
 	@("UA", "wingdings", "Primary_Key") int key;
-	@("UA") int zzz;
+	//@("UA") int zzz;
+	int zzz;
 }
 
 @("UA", "SomeOtherTableName2") struct Datas444 {
@@ -84,7 +85,9 @@ string[] extractPrimaryKeyNames(T)() {
 			continue;
 		} else {
 			string[] tmp = extractMemberNamesImpl!(T,it)().split(" ").array;
-			assert(!tmp.empty);
+			if(tmp.empty) {
+				continue;
+			}
 			foreach(jt; tmp) {
 				jt.strip();
 			}
@@ -212,6 +215,8 @@ pure bool isUA(string[] arr) @safe nothrow {
 			return true;
 		} else if(it == "NotUA") {
 			return false;
+		} else {
+			return true;
 		}
 	}
 	return true;
@@ -759,13 +764,13 @@ string genUniformAccess(T)() {
 		"import etc.c.sqlite3;\n"
 		~ "import std.traits;\n"
 		~ "void uniformAccessInsert(sqlite3* db, ref sqlite3_stmt* stmt, const int once) {\n"
-		//~ "\tStaticToStringZ!(insertStmt.length+1) toCstr;\n"
 		~ "\tauto elemCount = " ~ genInsertElemCount!T() ~ ";\n"
 		~ "\tenum insertStmt = \""~ genInsertStatement!T() ~ "\";\n"
+		~ "\tStaticToStringZ!(insertStmt.length+1) toCstr;\n"
 		~ "\tif(once <= 1) {\n"
-		//~ "\t\tStaticToStringZ!(2048) toCstrPara;\n"
-		//~ "\tint errCode = sqlite3_prepare_v2(db, toCstr.toStringZ(insertStmt)"
-		~ "\t\tint errCode = sqlite3_prepare_v2(db, toStringz(insertStmt)"
+		~ "\t\tStaticToStringZ!(2048) toCstrPara;\n"
+		~ "\tint errCode = sqlite3_prepare_v2(db, toCstr.toStringZ(insertStmt)"
+		//~ "\t\tint errCode = sqlite3_prepare_v2(db, toStringz(insertStmt)"
 		~ ",\n\t\t\tto!int(insertStmt.length), &stmt, null\n\t\t);\n"
 		~ "\t\tif(errCode != SQLITE_OK) {\n"
 		~ "\t\t	scope(exit) sqlite3_finalize(stmt);\n"

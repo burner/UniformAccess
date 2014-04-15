@@ -22,7 +22,8 @@ void checkIfDBExists(string dbName) {
 void main() {
 	auto f = File("50000.csv");
 
-	Five arr[50000];
+	//Five arr[50000];
+	Five[] arr = new Five[50000];
 	size_t idx = 0;
 
 	foreach(it; f.byLine()) {
@@ -33,26 +34,26 @@ void main() {
 	assert(idx == 50000, to!string(idx));
 
 	string dbname = "fivetodb.db";
-	version(handwritten) {
+	//version(handwritten) {
 		dbname = "testtable.db";
-	}
+	//}
 
-	version(uniform) {
+	/*version(uniform) {
 		checkIfDBExists(dbname);
 		auto db = Sqlite(dbname);
 		db.createTable!Five();
-	}
+	}*/
 
 	StopWatch sw;
-	version(uniform) {
+	/*version(uniform) {
 		sw.start();
 		db.beginTransaction();
 		foreach(it; arr) {
 			db.insert(it);
 		}
 		db.endTransaction();
-	}
-	version(handwritten) {
+	}*/
+	//version(handwritten) {
 		sqlite3 *db2;
 		sqlite3_open(toStringz(dbname), &db2);
 		sqlite3_stmt *stmt;
@@ -84,6 +85,6 @@ void main() {
 		sqlite3_finalize(stmt);
 		sqlite3_exec(db2, "END TRANSACTION;", null, null, null);
 
-	}
+	//}
 	writefln("%d", sw.peek.msecs);
 }
