@@ -1,3 +1,7 @@
+fun: ua/ctfetrie.d ua/util/eightylineformat.d Makefile
+	dmd ua/ctfetrie.d ua/util/eightylineformat.d -main -unittest -debug -ofctfetrie -Iua
+	./ctfetrie
+
 fiveud: uniformaccess.d fivek.d fiveud.d Makefile
 	rm -rf fivetodb.db
 	dmd fiveud.d uniformaccess.d fivek.d -offiveud -L-lsqlite3 -L-ldl \
