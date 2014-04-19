@@ -296,6 +296,24 @@ unittest {
 /* Sqlite Part */
 
 // insert
+/*pure string insertDataMember(string a) @safe nothrow {
+	return q{
+	static if(is(typeof(this. a) == long)) {
+		sqlite3_bind_int64(stmt, i++, this.a);
+	} else static if(isIntegral!(typeof(this. a ))) {
+		sqlite3_bind_int(stmt, i++, this.a);
+	} else static if(isFloatingPoint!(typeof(this. a))) {
+		sqlite3_bind_double(stmt, i++, this. a);
+	} else static if(isSomeString!(typeof(this. a))) {
+		sqlite3_bind_text(stmt, i++, toStringz(this. a), to!int(this. 
+		//sqlite3_bind_text(stmt, i++, toCstrPara.toStringZ(this. a ), to!int(this.
+		// a .length), SQLITE_STATIC);\n" ~
+		a .length), null);
+	} else {
+		static assert(false);
+	}
+	};
+}*/
 
 pure string insertDataMember(string a) @safe nothrow {
 	return
