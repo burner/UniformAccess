@@ -1,5 +1,6 @@
-fun: ua/ctfetrie.d ua/util/eightylineformat.d Makefile
-	dmd ua/ctfetrie.d ua/util/eightylineformat.d -main -unittest -debug -ofctfetrie -Iua
+fun: ua/ctfetrie.d ua/util/eightylineformat.d ua/uda.d ua/options.d Makefile
+	dmd ua/ctfetrie.d ua/util/eightylineformat.d ua/uda.d ua/options.d -main -unittest -debug \
+	-ofctfetrie -Iua
 	./ctfetrie
 
 fiveud: uniformaccess.d fivek.d fiveud.d Makefile

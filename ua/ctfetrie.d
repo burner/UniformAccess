@@ -45,5 +45,5 @@ void buildTrieImpl(ref Appender!string app, size_t deapth, TrieEntry name,
 
 unittest {
 	enum trie = buildTrie([TrieEntry("foo", "bar();")]);
-	writeln(trie);
+	//writeln(trie);
 }
