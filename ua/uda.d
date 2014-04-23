@@ -19,7 +19,7 @@ struct UA {
 	bool isNotNull;
 }
 
-/* whatever has an NoUA attribute will not be considered in UniformAccess
+/** Whatever has an NoUA attribute will not be considered in UniformAccess
 */
 enum NoUA;
 
