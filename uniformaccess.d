@@ -121,7 +121,7 @@ string getName(T)() @safe {
 			break;
 		}
 	}
-	if(l != -1) {
+	if(l != -1 && l+1 < fully.length) {
 		return fully[l+1 .. $];
 	} else {
 		return fully;

@@ -1,8 +1,9 @@
 module ua.uda;
 
-import std.traits;
+import std.conv;
 
 import ua.options;
+import ua.util.type;
 
 /** By default all data member of an struct or class will be considered when
 used in UniformAccess, the UA attribute makes the usage more verbose and
@@ -21,7 +22,9 @@ struct UA {
 
 /** Whatever has an NoUA attribute will not be considered in UniformAccess
 */
-enum NoUA;
+enum {
+	NoUA
+}
 
 version(unittest) {
 	struct Foo {
@@ -36,4 +39,21 @@ version(unittest) {
 	}
 }
 
+bool isUA(T, string member)() {
+	string ua = getNameOf!T;
+	string noUA = to!string(NoUA);
 
+	foreach(it; __traits(getAttributes, __traits(getMember, T, member))) {
+		if(is(UA == it)) {
+			return true;
+		} else if(is(noUA == it)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+unittest {
+	static assert(isUA!(Foo,"a"));
+}

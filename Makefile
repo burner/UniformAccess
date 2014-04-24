@@ -1,6 +1,7 @@
-fun: ua/ctfetrie.d ua/util/eightylineformat.d ua/where.d ua/uda.d ua/options.d Makefile
-	dmd ua/ctfetrie.d ua/util/eightylineformat.d ua/uda.d ua/options.d -main -unittest -debug \
+fun: ua/ctfetrie.d ua/util/eightylineformat.d ua/where.d ua/uda.d ua/options.d ua/util/type.d Makefile
+	dmd ua/ctfetrie.d ua/util/eightylineformat.d ua/uda.d ua/options.d ua/util/type.d -main -unittest -debug \
 	-ofctfetrie -Iua
+	./ctfetrie
 
 fiveud: uniformaccess.d fivek.d fiveud.d Makefile
 	rm -rf fivetodb.db
