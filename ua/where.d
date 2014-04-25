@@ -10,7 +10,7 @@ import std.traits;
 import std.string;
 
 struct Where(T) {
-	enum Op {
+	public enum Op {
 		EQ,
 		LE,
 		GE,
@@ -23,7 +23,7 @@ struct Where(T) {
 	string value;
 }
 
-Where where(T, string member, Where.Op op, long value)() {
+Where!T where(T, string member, Where!T.Op op, long value)() {
 	Where!T ret;
 	ret.member = member;
 	ret.op = op;
@@ -36,6 +36,6 @@ unittest {
 		int a;
 	}
 
-	auto w = where!(Foo, "a", Where.Op.EQ, 10);
+	auto w = where!(Foo, "a", Op.EQ, 10);
 	writeln(__LINE__);
 }

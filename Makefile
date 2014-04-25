@@ -1,5 +1,5 @@
 fun: ua/ctfetrie.d ua/util/eightylineformat.d ua/where.d ua/uda.d ua/options.d ua/util/type.d Makefile
-	dmd ua/ctfetrie.d ua/util/eightylineformat.d ua/uda.d ua/options.d ua/util/type.d -main -unittest -debug \
+	dmd ua/ctfetrie.d ua/util/eightylineformat.d ua/uda.d ua/where.d ua/options.d ua/util/type.d -main -unittest -debug \
 	-ofctfetrie -Iua
 	./ctfetrie
 
